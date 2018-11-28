@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+	<header>
+		<meta charset="UTF-8"/>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
+	</header>
+	<body>
+		<h1>Here we play chess!</h1>
+		<button onclick="play()">start</button>
+	</body>
+	<script>
+
+		function play() {
+
+			//var Chess = require('./chess').Chess;
+			var chess = new Chess();
+
+			while (!chess.game_over()) {
+				var moves = chess.moves();
+				var move = moves[Math.floor(Math.random() * moves.length)];
+				chess.move(move);
+			}
+
+			alert(chess.pgn());
+		};
+	</script>
+</html>
