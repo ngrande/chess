@@ -2,26 +2,132 @@
 <html>
 	<header>
 		<meta charset="UTF-8"/>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
+		<script type="text/javascript" src="jquery.js"></script>
+		<link rel="stylesheet" type="text/css" href="chessboard.css"/>
+		<script type="text/javascript" src="chessboard.js"></script>
+		<script type="text/javascript" src="chess.js"></script>
 	</header>
 	<body>
 		<h1>Here we play chess!</h1>
 		<button onclick="play()">start</button>
-	</body>
-	<script>
+		<button onclick="reset()">reset</button>
 
-		function play() {
-
-			//var Chess = require('./chess').Chess;
+		<div id="board" style="width: 400px"></div>
+		<div id="status"><div>
+		<script>
+			var board;
 			var chess = new Chess();
+			var status_div = $('#status');
 
-			while (!chess.game_over()) {
-				var moves = chess.moves();
+			var ai_move = function() {
+				if (chess.turn() !== 'b') {
+					return null;
+				}
+
+				console.log("AI is moving now");
+				var moves = chess.moves({ verbose: true });
 				var move = moves[Math.floor(Math.random() * moves.length)];
-				chess.move(move);
+				var res = chess.move(move);
+				console.log("res: " + res);
+				console.log(chess.turn());
+				console.log("Updating board");
+				//ai_move = function() {};
+				board.position(chess.fen());
+				console.log(move);
+
+				updateStatus();
+				return move;
+			};
+
+			var onChange = function(oldPos, newPos) {
+
+			};
+
+			var onDragStart = function(source, piece, position, orientation) {
+				if (chess.game_over() === true ||
+					(chess.turn() === 'w' && piece.search(/^b/) !== -1) ||
+					(chess.turn() === 'b' && piece.search(/^w/) !== -1)) {
+						return false;
+					}
+			};
+
+			var onDrop = function(source, target) {
+				var move = chess.move({
+					from: source,
+					to: target,
+					promotion: 'q' // always promote to qeen for simplicty
+				});
+
+				if (move === null) return 'snapback';
+
+				updateStatus();
+				ai_move();
+			};
+
+			var onSnapEnd = function() {
+				board.position(chess.fen());
+			};
+
+			var updateStatus = function() {
+				console.log("UpdateStatus");
+				var status = '';
+
+				var moveColor = 'White';
+				if (chess.turn() === 'b') {
+					moveColor = 'Black';
+				}
+
+				// checkmate ?
+				if (chess.in_checkmate() === true) {
+					status = 'chess over, ' + moveColor + ' is in checkmate.';
+				}
+				// draw ?
+				else if (chess.in_draw() === true) {
+					status = 'chess over, drawn position.';
+				}
+				// still going
+				else {
+					status = moveColor + ' to move';
+
+					// check ?
+					if (chess.in_check() === true) {
+						status += ', ' + moveColor + ' is in check.';
+					}
+				}
+
+				status_div.html(status);
+			};
+
+			function reset() {
+				board.clear(true);
+				board.start(true);
+				chess.reset();
+				updateStatus();
+				console.log("clearing board...");
 			}
 
-			alert(chess.pgn());
-		};
-	</script>
+			var cfg = {
+				draggable: true,
+				onDragStart: onDragStart,
+				onDrop: onDrop,
+				onSnapEnd: onSnapEnd,
+				//onChange: onChange,
+				//onMoveEnd: onMoveEnd,
+				dropOffBoard: 'snapback',
+				pieceTheme: 'img/chesspieces/alpha/{piece}.png',
+				position: 'start'
+			};
+
+			board = Chessboard('board', cfg);
+
+			updateStatus();
+			//var Chess = require('./chess').Chess;
+
+			//board.start(true);
+
+		</script>
+
+	</body>
 </html>
+
+<!--vim: tabstop=4 shiftwidth=4 noexpandtab-->
