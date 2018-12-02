@@ -17,6 +17,95 @@
 			var board;
 			var chess = new Chess();
 			var status_div = $('#status');
+			var BEST_MOVE_START = 9999;
+			var ALPHA_START = -(BEST_MOVE_START + 1);
+			var BETA_START = BEST_MOVE_START + 1;
+
+			var get_moves = function() {
+				return chess.moves({ verbose: true });
+			};
+
+			var eval_counter = 0;
+
+			var INC_EVAL_COUNTER = function() {
+				eval_counter = eval_counter + 1;
+			}
+
+			var minimax = function(depth, alpha, beta, is_maximising_player = true) {
+				////console.log("depth level: " + depth);
+				////console.log("is_maximising_player: " + is_maximising_player);
+				if (depth === 0) {
+					return -eval_board();
+				}
+
+				var new_game_moves = get_moves();
+
+				if (is_maximising_player) {
+					var best_move = -BEST_MOVE_START;
+
+					for (var i = 0; i < new_game_moves.length; i++) {
+						chess.move(new_game_moves[i]);
+
+						INC_EVAL_COUNTER();
+
+						best_move = Math.max(best_move, minimax(depth - 1, alpha, beta, !is_maximising_player));
+						chess.undo();
+
+						alpha = Math.max(alpha, best_move);
+						if (beta <= alpha) {
+							return best_move;
+						}
+					}
+
+					return best_move;
+				} else {
+					var best_move = BEST_MOVE_START;
+					for (var i = 0; i < new_game_moves.length; i++) {
+						chess.move(new_game_moves[i]);
+
+						INC_EVAL_COUNTER();
+
+						best_move = Math.min(best_move, minimax(depth - 1, alpha, beta, !is_maximising_player));
+						chess.undo();
+
+						beta = Math.min(beta, best_move);
+						if (beta <= alpha) {
+							return best_move;
+						}
+					}
+
+					return best_move;
+				}
+			};
+
+			var minimax_root = function(depth, is_maximising_player = true) {
+				//console.log("searching for best move with depth of " + depth);
+				var moves = get_moves();
+				var best_move = -9999;
+				var best_move_found;
+
+				for (var i = 0; i < moves.length; i++) {
+					var new_move = moves[i];
+					chess.move(new_move);
+
+					INC_EVAL_COUNTER();
+
+					var value = minimax(depth - 1, ALPHA_START, BETA_START, !is_maximising_player);
+
+					chess.undo();
+
+					if (value >= best_move) {
+						best_move = value;
+						best_move_found = new_move;
+					}
+				}
+
+				//console.log("best move found: " + best_move_found + " with a value of " + best_move);
+
+				console.log("evaluated " + eval_counter + " moves");
+				eval_counter = 0;
+				return best_move_found;
+			};
 
 			var reverse_arr = function(array) {
 				return array.slice().reverse();
@@ -140,8 +229,8 @@
 			};
 
 			var calc_best_move = function() {
-				var new_game_moves = chess.moves({ verbose: true });
-				console.log("Available moves: " + new_game_moves);
+				var new_game_moves = get_moves();
+				//console.log("Available moves: " + new_game_moves);
 				var best_move = null;
 
 				var best_value = -9999;
@@ -161,7 +250,7 @@
 					}
 				}
 
-				console.log("calculated best move: " + best_move);
+				//console.log("calculated best move: " + best_move);
 				return best_move;
 			};
 
@@ -170,23 +259,15 @@
 					return null;
 				}
 
-				console.log("AI is moving now");
+				//console.log("AI is moving now");
 
-				var move = calc_best_move();
+				var move = minimax_root(3);
 
-				//var moves = chess.moves({ verbose: true });
-				//var move = moves[Math.floor(Math.random() * moves.length)];
-				//var res = chess.move(move);
-				//console.log("res: " + res);
-				//console.log(chess.turn());
-				//console.log("Updating board");
-				//ai_move = function() {};
 				var chess_res = chess.move(move);
 				board.position(chess.fen());
-				console.log("chess result: " + chess_res);
-				//console.log(move);
+				//console.log("chess result: " + chess_res);
 
-				updateStatus();
+				update_status();
 				return move;
 			};
 
@@ -211,7 +292,7 @@
 
 				if (move === null) return 'snapback';
 
-				updateStatus();
+				update_status();
 				ai_move();
 			};
 
@@ -219,30 +300,32 @@
 				board.position(chess.fen());
 			};
 
-			var updateStatus = function() {
-				console.log("UpdateStatus");
+			var update_status = function() {
+				//console.log("UpdateStatus");
 				var status = '';
 
-				var moveColor = 'White';
+				var move_color = 'White';
 				if (chess.turn() === 'b') {
-					moveColor = 'Black';
+					move_color = 'Black';
 				}
 
 				// checkmate ?
 				if (chess.in_checkmate() === true) {
-					status = 'chess over, ' + moveColor + ' is in checkmate.';
+					status = 'chess over, ' + move_color + ' is in checkmate.';
+					alert("game over - " + move_color + " lost.");
 				}
 				// draw ?
 				else if (chess.in_draw() === true) {
 					status = 'chess over, drawn position.';
+					alert("draw");
 				}
 				// still going
 				else {
-					status = moveColor + ' to move';
+					status = move_color + ' to move';
 
 					// check ?
 					if (chess.in_check() === true) {
-						status += ', ' + moveColor + ' is in check.';
+						status += ', ' + move_color + ' is in check.';
 					}
 				}
 
@@ -253,8 +336,8 @@
 				board.clear(true);
 				board.start(true);
 				chess.reset();
-				updateStatus();
-				console.log("clearing board...");
+				update_status();
+				//console.log("clearing board...");
 			}
 
 			var cfg = {
@@ -271,7 +354,7 @@
 
 			board = Chessboard('board', cfg);
 
-			updateStatus();
+			update_status();
 			//var Chess = require('./chess').Chess;
 
 			//board.start(true);
