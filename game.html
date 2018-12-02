@@ -17,6 +17,9 @@
 		<div id="white_wins_counter"></div>
 		<h3>Black Score</h3>
 		<div id="black_wins_counter"></div>
+		<hr>
+		<h2>Game Log</h2>
+		<pre id="log" style="overflow:auto;height:400px;"></pre>
 		<script>
 			var board;
 			var chess = new Chess();
@@ -319,6 +322,7 @@
 				// checkmate ?
 				if (chess.in_checkmate() === true) {
 					status = 'chess over, ' + move_color + ' is in checkmate.';
+					console.log(status);
 					if (chess.turn() === 'b') {
 						white_wins = white_wins + 1;
 					} else {
@@ -330,6 +334,7 @@
 				// draw ?
 				else if (chess.in_draw() === true) {
 					status = 'chess over, drawn position.';
+					console.log(status);
 					black_wins = black_wins + 1;
 					white_wins = white_wins + 1;
 					reset();
@@ -384,6 +389,15 @@
 			window.setInterval(function() {
 				ai_move();
 			}, 3000);
+
+			(function() {
+				var div_log = $('#log');
+				var old_log = console.log;
+				console.log = function (message) {
+					div_log.html(div_log.html() + "\n" + message + "\n");
+					old_log.apply(console, arguments);
+				};
+			})();
 
 		</script>
 
