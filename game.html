@@ -12,7 +12,11 @@
 		<button onclick="reset()">reset</button>
 
 		<div id="board" style="width: 400px"></div>
-		<div id="status"><div>
+		<div id="status"></div>
+		<h3>White Score</h3>
+		<div id="white_wins_counter"></div>
+		<h3>Black Score</h3>
+		<div id="black_wins_counter"></div>
 		<script>
 			var board;
 			var chess = new Chess();
@@ -26,6 +30,8 @@
 			};
 
 			var eval_counter = 0;
+			var black_wins = 0;
+			var white_wins = 0;
 
 			var INC_EVAL_COUNTER = function() {
 				eval_counter = eval_counter + 1;
@@ -255,9 +261,10 @@
 			};
 
 			var ai_move = function() {
-				if (chess.turn() !== 'b') {
-					return null;
-				}
+				console.log("AI is moving for " + chess.turn());
+				//if (chess.turn() !== 'b') {
+				//	return null;
+				//}
 
 				//console.log("AI is moving now");
 
@@ -293,7 +300,7 @@
 				if (move === null) return 'snapback';
 
 				update_status();
-				ai_move();
+				//ai_move();
 			};
 
 			var onSnapEnd = function() {
@@ -312,12 +319,20 @@
 				// checkmate ?
 				if (chess.in_checkmate() === true) {
 					status = 'chess over, ' + move_color + ' is in checkmate.';
-					alert("game over - " + move_color + " lost.");
+					if (chess.turn() === 'b') {
+						white_wins = white_wins + 1;
+					} else {
+						black_wins = black_wins + 1;
+					}
+
+					reset();
 				}
 				// draw ?
 				else if (chess.in_draw() === true) {
 					status = 'chess over, drawn position.';
-					alert("draw");
+					black_wins = black_wins + 1;
+					white_wins = white_wins + 1;
+					reset();
 				}
 				// still going
 				else {
@@ -330,6 +345,7 @@
 				}
 
 				status_div.html(status);
+				//ai_move();
 			};
 
 			function reset() {
@@ -338,6 +354,7 @@
 				chess.reset();
 				update_status();
 				//console.log("clearing board...");
+				update_counter();
 			}
 
 			var cfg = {
@@ -358,6 +375,15 @@
 			//var Chess = require('./chess').Chess;
 
 			//board.start(true);
+			var update_counter = function() {
+				$('#black_wins_counter').html("- " + black_wins + " -");
+				$('#white_wins_counter').html("- " + white_wins + " -");
+			};
+
+			update_counter();
+			window.setInterval(function() {
+				ai_move();
+			}, 3000);
 
 		</script>
 
