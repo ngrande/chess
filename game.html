@@ -42,7 +42,13 @@
 			var BETA_START = BEST_MOVE_START + 1;
 
 			var get_moves = function() {
-				return chess.moves({ verbose: true });
+				var moves = chess.moves({ verbose: true });
+				var shuffled_moves = new Array();
+				for (var i = moves.length; i >= 0; i--) {
+					shuffled_moves.push(moves[Math.random() * i | 0]);
+				}
+
+				return shuffled_moves;
 			};
 
 			var eval_counter = 0;
