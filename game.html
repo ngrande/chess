@@ -18,6 +18,87 @@
 			var chess = new Chess();
 			var status_div = $('#status');
 
+			var reverse_arr = function(array) {
+				return array.slice().reverse();
+			};
+
+			var pawn_eval_white =
+				[
+					[0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+					[5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0],
+					[1.0,  1.0,  2.0,  3.0,  3.0,  2.0,  1.0,  1.0],
+					[0.5,  0.5,  1.0,  2.5,  2.5,  1.0,  0.5,  0.5],
+					[0.0,  0.0,  0.0,  2.0,  2.0,  0.0,  0.0,  0.0],
+					[0.5, -0.5, -1.0,  0.0,  0.0, -1.0, -0.5,  0.5],
+					[0.5,  1.0, 1.0,  -2.0, -2.0,  1.0,  1.0,  0.5],
+					[0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
+				];
+
+			var pawn_eval_black = reverse_arr(pawn_eval_white);
+
+			var knight_eval =
+				[
+					[-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0],
+					[-4.0, -2.0,  0.0,  0.0,  0.0,  0.0, -2.0, -4.0],
+					[-3.0,  0.0,  1.0,  1.5,  1.5,  1.0,  0.0, -3.0],
+					[-3.0,  0.5,  1.5,  2.0,  2.0,  1.5,  0.5, -3.0],
+					[-3.0,  0.0,  1.5,  2.0,  2.0,  1.5,  0.0, -3.0],
+					[-3.0,  0.5,  1.0,  1.5,  1.5,  1.0,  0.5, -3.0],
+					[-4.0, -2.0,  0.0,  0.5,  0.5,  0.0, -2.0, -4.0],
+					[-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0]
+				];
+
+			var bishop_eval_white = [
+				[ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0],
+				[ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
+				[ -1.0,  0.0,  0.5,  1.0,  1.0,  0.5,  0.0, -1.0],
+				[ -1.0,  0.5,  0.5,  1.0,  1.0,  0.5,  0.5, -1.0],
+				[ -1.0,  0.0,  1.0,  1.0,  1.0,  1.0,  0.0, -1.0],
+				[ -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, -1.0],
+				[ -1.0,  0.5,  0.0,  0.0,  0.0,  0.0,  0.5, -1.0],
+				[ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0]
+			];
+
+			var bishop_eval_black = reverse_arr(bishop_eval_white);
+
+			var rook_eval_white = [
+				[  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+				[  0.5,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.5],
+				[ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+				[ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+				[ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+				[ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+				[ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+				[  0.0,   0.0, 0.0,  0.5,  0.5,  0.0,  0.0,  0.0]
+			];
+
+			var rook_eval_black = reverse_arr(rook_eval_white);
+
+			var queen_eval = [
+				[ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
+				[ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
+				[ -1.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
+				[ -0.5,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
+				[  0.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
+				[ -1.0,  0.5,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
+				[ -1.0,  0.0,  0.5,  0.0,  0.0,  0.0,  0.0, -1.0],
+				[ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0]
+			];
+
+			var king_eval_white = [
+
+				[ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+				[ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+				[ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+				[ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+				[ -2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0],
+				[ -1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0],
+				[  2.0,  2.0,  0.0,  0.0,  0.0,  0.0,  2.0,  2.0 ],
+				[  2.0,  3.0,  1.0,  0.0,  0.0,  1.0,  3.0,  2.0 ]
+			];
+
+			var king_eval_black = reverse_arr(king_eval_white);
+
 			var get_piece_value = function(piece, x, y) {
 				if (piece === null) {
 					return 0;
@@ -27,11 +108,23 @@
 					if (piece.type === 'p') {
 						return 10 + (is_white ? pawn_eval_white[y][x] : pawn_eval_black[y][x]);
 					} else if (piece.type === 'r') {
-						return 50 + ( is_white ? rook_eval_white[y][x] : rook_eval_black[y][x]);
+						return 50 + (is_white ? rook_eval_white[y][x] : rook_eval_black[y][x]);
 					} else if (piece.type === 'n') {
-						return 
+						return 30 + knight_eval[y][x];
+					} else if (piece.type === 'b') {
+						return 30 + (is_white ? bishop_eval_white[y][x] : bishop_eval_black[y][x]);
+					} else if (piece.type === 'q') {
+						return 90 + queen_eval[y][x];
+					} else if (piece.type === 'k') {
+						return 900 + (is_white ? king_eval_white[y][x] : king_eval_black[y][x]);
 					}
-				}
+					else {
+						throw "Unknown piece type: " + piece.type;
+					}
+				};
+
+				var abs_val = get_abs_val(piece, piece.color === 'w', x, y);
+				return piece.color === 'w' ? abs_val : -abs_val;
 			};
 
 			var eval_board = function() {
@@ -48,6 +141,7 @@
 
 			var calc_best_move = function() {
 				var new_game_moves = chess.moves({ verbose: true });
+				console.log("Available moves: " + new_game_moves);
 				var best_move = null;
 
 				var best_value = -9999;
@@ -58,7 +152,17 @@
 					chess.move(new_game_move);
 
 					var board_value = -eval_board();
+
+					chess.undo();
+
+					if (board_value > best_value) {
+						best_value = board_value;
+						best_move = new_game_move;
+					}
 				}
+
+				console.log("calculated best move: " + best_move);
+				return best_move;
 			};
 
 			var ai_move = function() {
@@ -67,15 +171,20 @@
 				}
 
 				console.log("AI is moving now");
-				var moves = chess.moves({ verbose: true });
-				var move = moves[Math.floor(Math.random() * moves.length)];
-				var res = chess.move(move);
-				console.log("res: " + res);
-				console.log(chess.turn());
-				console.log("Updating board");
+
+				var move = calc_best_move();
+
+				//var moves = chess.moves({ verbose: true });
+				//var move = moves[Math.floor(Math.random() * moves.length)];
+				//var res = chess.move(move);
+				//console.log("res: " + res);
+				//console.log(chess.turn());
+				//console.log("Updating board");
 				//ai_move = function() {};
+				var chess_res = chess.move(move);
 				board.position(chess.fen());
-				console.log(move);
+				console.log("chess result: " + chess_res);
+				//console.log(move);
 
 				updateStatus();
 				return move;
