@@ -22,6 +22,8 @@
 					<div id="status"></div>
 				</div>
 				<div class="col-sm">
+					<h2>Games played</h2>
+					<div id="game_counter"></div>
 					<h3>White Score</h3>
 					<div id="white_wins_counter"></div>
 					<h3>Black Score</h3>
@@ -51,6 +53,7 @@
 				return shuffled_moves;
 			};
 
+			var game_counter = -1;
 			var eval_counter = 0;
 			var black_wins = 0;
 			var white_wins = 0;
@@ -72,12 +75,13 @@
 					var best_move = -BEST_MOVE_START;
 
 					for (var i = 0; i < new_game_moves.length; i++) {
+						var fen_before = chess.fen();
 						chess.move(new_game_moves[i]);
 
 						INC_EVAL_COUNTER();
 
 						best_move = Math.max(best_move, minimax(depth - 1, alpha, beta, !is_maximising_player));
-						chess.undo();
+						chess.load(fen_before);
 
 						alpha = Math.max(alpha, best_move);
 						if (beta <= alpha) {
@@ -89,12 +93,13 @@
 				} else {
 					var best_move = BEST_MOVE_START;
 					for (var i = 0; i < new_game_moves.length; i++) {
+						var fen_before = chess.fen();
 						chess.move(new_game_moves[i]);
 
 						INC_EVAL_COUNTER();
 
 						best_move = Math.min(best_move, minimax(depth - 1, alpha, beta, !is_maximising_player));
-						chess.undo();
+						chess.load(fen_before);
 
 						beta = Math.min(beta, best_move);
 						if (beta <= alpha) {
@@ -114,13 +119,14 @@
 
 				for (var i = 0; i < moves.length; i++) {
 					var new_move = moves[i];
+					var fen_before = chess.fen();
 					chess.move(new_move);
 
 					INC_EVAL_COUNTER();
 
 					var value = minimax(depth - 1, ALPHA_START, BETA_START, !is_maximising_player);
 
-					chess.undo();
+					chess.load(fen_before);
 
 					if (value >= best_move) {
 						best_move = value;
@@ -265,12 +271,13 @@
 
 				for (var i = 0; i < new_game_moves.length; i++) {
 					var new_game_move = new_game_moves[i];
+					var fen_before = chess.fen();
 
 					chess.move(new_game_move);
 
 					var board_value = -eval_board();
 
-					chess.undo();
+					chess.load(fen);
 
 					if (board_value > best_value) {
 						best_value = board_value;
@@ -290,7 +297,7 @@
 
 				//console.log("AI is moving now");
 
-				var move = minimax_root(3);
+				var move = minimax_root(2);
 
 				var chess_res = chess.move(move);
 				board.position(chess.fen());
@@ -402,6 +409,8 @@
 			var update_counter = function() {
 				$('#black_wins_counter').html("- " + black_wins + " -");
 				$('#white_wins_counter').html("- " + white_wins + " -");
+				game_counter = game_counter + 1;
+				$('#game_counter').html("# " + game_counter + " #");
 			};
 
 			update_counter();
